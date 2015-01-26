@@ -27,8 +27,8 @@ io.on('connection', function(socket) {
 
             //search in different collections with submudule risdd{} 
             var risdd = require("./lib/risdd.js");
-            risdd.query({ search : data['userdata'] , collection : "sessions" }, function(requestResult){
-                socket.emit('serverdata', requestResult );
+            risdd.query({ search : data['userdata'] , collection : "sessions" , key : 'description' },
+                        function(requestResult){ socket.emit('serverdata', requestResult );
             });
     });
 });
