@@ -17,10 +17,14 @@ var printDbResult = function(result) {
     if( result["result"] === false ) out = "Keine Suchtreffer";
     else {
         for( i in result ){
-            if(date = result[i]['date_start'] != 'undefined')
+            if(result[i]['date_start'] != undefined) {
+                var session_start = new Date(result[i]['date_start']);
+                var dateStr = session_start.getDate()+"-"+session_start.getMonth()+"-"+session_start.getFullYear();
+            }
+            else var dateStr = "kein Datum hinterlegt";
                 
-            out += "<p><div>"      +result[i]['description']
-                        +"("       +date.length+ ")"
+            out += "<p><div>"           +result[i]['description']
+                        +" ("            +dateStr + ")"
                         +"</div><div>"  +result[i]['committee_name']
                         +"</div></p>";
             }
