@@ -1,0 +1,52 @@
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+
+// socket.io
+var socket = io('http://localhost:8080');
+//vom Server Daten empfagen
+socket.on('serverdata', function(requestResult){
+    printDbResult( requestResult )
+    });
+
+
+
+// HTML outputting
+var printDbResult = function(result) {
+    var out = "Treffer: "+ result.length;
+    if( result["result"] === false ) out = "Keine Suchtreffer";
+    else {
+        for( i in result ){
+            if(date = result[i]['date_start'] != 'undefined')
+                
+            out += "<p><div>"      +result[i]['description']
+                        +"("            +date.length  + ")"
+                        +"</div><div>"  +result[i]['committee_name']
+                        +"</div></p>";
+            }
+    }
+    document.getElementById("mongoresult").innerHTML = out;
+}
+
+
+// Send userdata to server, as db request
+var userinput = function(str) {
+    if( str.value.length > 3 )
+    {
+            socket.emit('mongodbsearch', { userdata: str.value });
+    }
+}
+
+</script>
+
+<html>
+
+    <h1> Suche: </h1
+    <div class=usersearch><p id=usersearch></p></div>
+    <form>
+    <div> Suchbegriff: <input type=text oninput="userinput(this)"> </div>
+    </form>
+
+    <div class=mongoresult><p id=mongoresult>Keine Treffer in der DB</p></div>
+
+</html> 

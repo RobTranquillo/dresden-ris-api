@@ -1,0 +1,29 @@
+{
+  "name": "risdd.js",
+  "version": "0.1",
+  "description": "An module to read from an mongoDB that was filled up with scrape-a-ris by Marian Steinbach",
+  "author": "Rob Tranquillo <rob.tranquillo@gmx.de>",
+  "main": "lib/risdd.js",
+  "repository": {
+  "type": "git",
+  "url": "https://github.com/robtranquillo/risdd_browser"
+},
+  "bugs": {
+  "url": "https://github.com/robtranquillo/risdd_browser/issues"
+},
+  "keywords": [
+  "nodejs",
+  "mongodb",
+  "ratsfinformation",
+  "Dresden"
+],
+  "dependencies": {
+    "http":"",
+    "socket.io": "http://socket.io/download/",
+    "mongodb": "https://github.com/mongodb/node-mongodb-native"
+  },
+  "preferGlobal": true,
+  "private": true,
+  "analyze": true,
+  "license": "MIT"
+}
