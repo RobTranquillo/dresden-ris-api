@@ -11,5 +11,6 @@ NodeJS based webapplication/api for connection to your https://github.com/marian
 open in browser:
 > localhost:8080
 
-to change MongoDB DB change risdd.js / mongodbsearch()
-var url = 'mongodb://localhost:27017/ris';
+## to change MongoDB connection
+change in risdd.js  mongodbsearch()
+> var url = 'mongodb://localhost:27017/ris';
