@@ -6,16 +6,42 @@
 var socket = io('http://localhost:8080');
 //vom Server Daten empfagen
 socket.on('serverdata', function(requestResult){
-    printDbResult( requestResult )
+    if( requestResult["type"] == "sessions" )  builtSessionsResult( requestResult["data"], function(str){ printHTML(str); } );
+    if( requestResult["type"] == "person"  )  builtPersonResult( requestResult["data"], function(str){ printHTML(str); } );
     });
+    
 
 
 
-// HTML outputting
-var printDbResult = function(result) {
-    var out = "Treffer: "+ result.length;
-    if( result["result"] === false ) out = "Keine Suchtreffer";
+
+// print out HTML 
+var printHTML = function( str ) {
+    document.getElementById("mongoresult").innerHTML += str;
+}
+
+
+// built HTML output 
+var builtPersonResult = function(result, callback) {
+    var out = "Treffer bei Personen: "+ result.length;
+    if( result["result"] === false ) out = "<div>Keine Personen Suchtreffer</div>";
     else {
+        out += "<ul>";
+        for( i in result ){
+            out += "<li>"
+                    + result[i]["title"]
+                    + "(Nr. <i>"+result[i]["numeric_id"]+"</i>)";
+                +"</li>";
+        }
+    }
+    out += "</ul>";
+    callback( out );
+}
+
+var builtSessionsResult = function(result, callback) {
+    var out = "Treffer in Sitzungen: "+ result.length;
+    if( result["result"] === false ) out = "<div>Keine Suchtreffer in Sitzungen</div>";
+    else {
+        out += "<ul>";
         for( i in result ){
             if(result[i]['date_start'] != undefined) {
                 var session_start = new Date(result[i]['date_start']);
@@ -23,15 +49,15 @@ var printDbResult = function(result) {
             }
             else var dateStr = "kein Datum hinterlegt";
                 
-            out += "<p><div>"
+            out += "<li>"
                         + result[i]['description']
                         +" ("+dateStr+")"
-                    +"</div>"
-                        + "<div><i>"+result[i]['committee_name']+"</i></div>";
-                    +"</p>";
+                        + "<br><i>"+result[i]['committee_name']+"</i></div>";
+                    +"</li>";
             }
     }
-    document.getElementById("mongoresult").innerHTML = out;
+    out += "</ul>";
+    callback( out );
 }
 
 
@@ -39,7 +65,7 @@ var printDbResult = function(result) {
 var userinput = function(str) {
     if( str.value.length > 3 )
     {
-            socket.emit('mongodbsearch', { userdata: str.value });
+        socket.emit('mongodbsearch', { userdata: str.value });
     }
 }
 
