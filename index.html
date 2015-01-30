@@ -1,22 +1,48 @@
-
+<html>
+<head> <meta charset="utf-8">  </head>
 <script src="/socket.io/socket.io.js"></script>
 <script>
 
 // socket.io
 var socket = io('http://localhost:8080');
+
+// Send userdata to server, as db request
+var userinput = function(str) {
+    if( str.value.length > 3 )
+    {
+        socket.emit("mongodbsearch", { userdata: str.value });
+    }
+}
+
+var getOverview = function() {
+    socket.emit("mongodbsearch", { overview : "persons" });
+}
+
+
 //vom Server Daten empfagen
 socket.on('serverdata', function(requestResult){
-    if( requestResult["type"] == "sessions" )  builtSessionsResult( requestResult["data"], function(str){ printHTML(str); } );
-    if( requestResult["type"] == "person"  )  builtPersonResult( requestResult["data"], function(str){ printHTML(str); } );
-    });
+    if( requestResult["type"] == "ov_persons" )   builtOverviewResult( "Personen", requestResult["data"], function(str){ printHTML(str, "result_ov_persons"); } );
     
+    if( requestResult["type"] == "sessions" )   builtSessionsResult( requestResult["data"], function(str){ printHTML(str, "result_sessions"); } );
+    if( requestResult["type"] == "person"  )    builtPersonResult(   requestResult["data"], function(str){ printHTML(str, "result_person"); } );
+    });
 
 
+var printHTML = function( str, field ) {
+    document.getElementById(field).innerHTML = str;
+}
 
 
-// print out HTML 
-var printHTML = function( str ) {
-    document.getElementById("mongoresult").innerHTML += str;
+// built HTML output for overviews
+var builtOverviewResult = function(collection, result, callback) {
+    var out = collection+" <select>";
+    if( result["result"] === false ) out = "<div>Keine "+collection+" Suchtreffer</div>";
+    else {
+        for( i in result ){
+            out+= "<option>"+result[i]["title"];
+        }
+        callback(out);
+    }
 }
 
 
@@ -24,19 +50,21 @@ var printHTML = function( str ) {
 var builtPersonResult = function(result, callback) {
     var out = "Treffer bei Personen: "+ result.length;
     if( result["result"] === false ) out = "<div>Keine Personen Suchtreffer</div>";
-    else {
+    else
+    {
         out += "<ul>";
         for( i in result ){
             out += "<li>"
                     + result[i]["title"]
                     + "(Nr. <i>"+result[i]["numeric_id"]+"</i>)";
-                +"</li>";
+                +  "</li>";
         }
     }
     out += "</ul>";
     callback( out );
 }
 
+// print out HTML 
 var builtSessionsResult = function(result, callback) {
     var out = "Treffer in Sitzungen: "+ result.length;
     if( result["result"] === false ) out = "<div>Keine Suchtreffer in Sitzungen</div>";
@@ -59,19 +87,14 @@ var builtSessionsResult = function(result, callback) {
     out += "</ul>";
     callback( out );
 }
-
-
-// Send userdata to server, as db request
-var userinput = function(str) {
-    if( str.value.length > 3 )
-    {
-        socket.emit('mongodbsearch', { userdata: str.value });
-    }
-}
-
 </script>
 
-<html>
+<body>
+    <h1>Übersicht</h1>
+    <div class=overview id=overview>
+        <button id=loadOverview name=bt_loadOverview type=button onclick="getOverview()">Übersicht laden</button>
+        <div id=result_ov_persons></div>
+    </div>
 
     <h1> Suche: </h1
     <div class=usersearch><p id=usersearch></p></div>
@@ -79,6 +102,11 @@ var userinput = function(str) {
     <div> Suchbegriff: <input type=text oninput="userinput(this)"> </div>
     </form>
 
-    <div class=mongoresult><p id=mongoresult>Keine Treffer in der DB</p></div>
-
-</html> 
+    <div class=mongoresult id=mongoresult>
+        <div class=result_sessions id=result_sessions>
+        </div>
+        <div class=result_serson id=result_person>
+        </div>
+    </div>
+</body>
+</html>
