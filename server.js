@@ -27,9 +27,13 @@ io.on('connection', function(socket) {
         var risdd = require('./lib/risdd.js');
 
         // fill up overviews
-        if( data['overview'] !== undefined ) {
+        if( data['overview'] !== 'persons' ) {
             risdd.query({search : '', collection : 'person', key : 'title'},
-                        function(requestResult){ socket.emit('serverdata', { type : 'ov_persons', data : requestResult })})
+                        function(requestResult){ socket.emit('serverdata', { type : 'ov_persons', data : requestResult }) });
+        }
+        if( data['overview'] !== 'sessions' ) {
+            risdd.query({search : '', collection : 'sessions', key : 'description'},
+                        function(requestResult){ socket.emit('serverdata', { type : 'ov_sessions', data : requestResult }) });
         }
 
 

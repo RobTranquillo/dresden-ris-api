@@ -8,20 +8,22 @@ var socket = io('http://localhost:8080');
 
 // Send userdata to server, as db request
 var userinput = function(str) {
-    if( str.value.length > 3 )
-    {
-        socket.emit('mongodbsearch', { userdata: str.value });
+    if( str.value.length > 3 ){
+        socket.emit('mongodbsearch', { userdata : str.value });
     }
 }
 
+// request overview data from server 
 var getOverview = function() {
     socket.emit('mongodbsearch', { overview : 'persons' });
+    socket.emit('mongodbsearch', { overview : 'sessions' });
 }
 
 
-//vom Server Daten empfagen
+// recive data from server
 socket.on('serverdata', function(requestResult){
-    if( requestResult['type'] == 'ov_persons' )   builtOverviewResult( 'Personen', requestResult['data'], function(str){ printHTML(str, 'result_ov_persons'); } );
+    if( requestResult['type'] == 'ov_persons' )    builtOverviewResult( 'Personen', requestResult['data'], function(str){ printHTML(str, 'result_ov_persons');  } );
+    if( requestResult['type'] == 'ov_sessions' )   builtOverviewResult( 'Sitzungen', requestResult['data'], function(str){ printHTML(str, 'result_ov_committees'); } );
     
     if( requestResult['type'] == 'sessions' )   builtSessionsResult( requestResult['data'], function(str){ printHTML(str, 'result_sessions'); } );
     if( requestResult['type'] == 'person'  )    builtPersonResult(   requestResult['data'], function(str){ printHTML(str, 'result_person'); } );
@@ -34,15 +36,42 @@ var printHTML = function( str, field ) {
 
 
 // built HTML output for overviews
-var builtOverviewResult = function(collection, result, callback) {
-    var out = collection+' <select>';
-    if( result['result'] === false ) out = '<div>Keine '+collection+' Suchtreffer</div>';
+var glob_sessions_data = Array();
+var builtOverviewResult = function( description, result, callback) {
+    var out = description;
+    if( result['result'] === false ) out = '<div>Keine '+description+' Suchtreffer</div>';
     else {
-        for( i in result ){
-            out+= '<option>'+result[i]['title'];
+        if(description == 'Personen') {
+            out += '<select>';
+            for( i in result ){
+                out+= '<option>'+result[i]['title'];
+            }
+        }
+        if(description == 'Sitzungen') {
+            glob_sessions_data = result; //for further requests on the data, save it global
+            var distinct = ''; //emulate the SELECT DISTINCT statement by memorize known committees in one string
+            out += '<select onchange="loadSession(this.options[this.selectedIndex].value)" >';
+            for( i in result ) {
+                if( distinct.indexOf(result[i]['committee_name'])  == -1 ) {
+                    out+= '<option >'+result[i]['committee_name'];
+                    distinct += result[i]['committee_name'];
+                }
+            }
         }
         callback(out);
     }
+}
+
+
+
+// gets the selected session and builds the new <select>
+var loadSession = function(sender) {
+    var out = '<select>';
+    for( i in glob_sessions_data ) {
+        if( glob_sessions_data[i]['committee_name'] === sender )
+            out += '<option>['+glob_sessions_data[i]['date_start'].substr(0,10)+'] '+ glob_sessions_data[i]['description'];
+    }
+    printHTML( out , 'result_ov_sessions');
 }
 
 
@@ -94,6 +123,8 @@ var builtSessionsResult = function(result, callback) {
     <div class=overview id=overview>
         <button id=loadOverview name=bt_loadOverview type=button onclick='getOverview()'>Übersicht laden</button>
         <div id=result_ov_persons></div>
+        <div id=result_ov_committees></div>
+        <div id=result_ov_sessions></div>
     </div>
 
     <h1> Suche: </h1
